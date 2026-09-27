@@ -139,8 +139,23 @@ def fetch_status():
 
 
 # ----------------------------------------------------------------- telegram --
+TG_ATTEMPTS = 3  # retry Telegram calls on network errors/timeouts
+
+
 def tg(token: str, method: str, **params):
-    r = requests.post(f"https://api.telegram.org/bot{token}/{method}", json=params, timeout=30)
+    last_exc = None
+    for attempt in range(1, TG_ATTEMPTS + 1):
+        try:
+            r = requests.post(f"https://api.telegram.org/bot{token}/{method}",
+                              json=params, timeout=30)
+            break
+        except requests.RequestException as exc:
+            last_exc = exc
+            print(f"Telegram {method} attempt {attempt}/{TG_ATTEMPTS} failed: {exc}")
+            if attempt < TG_ATTEMPTS:
+                time.sleep(5 * attempt)
+    else:
+        raise RuntimeError(f"Telegram {method}: failed after {TG_ATTEMPTS} attempts: {last_exc}")
     try:
         data = r.json()
     except ValueError:
@@ -302,9 +317,12 @@ def main() -> int:
 
     # --- daily silent check-in, so you know the monitor is still alive
     if now.hour >= HEARTBEAT_HOUR_UB and state.get("last_heartbeat_date") != today:
-        send(token, chat_id, "☀️ Daily check-in: still watching.\n\n" + status_block(result, now),
-             silent=True)
-        state["last_heartbeat_date"] = today
+        try:
+            send(token, chat_id, "☀️ Daily check-in: still watching.\n\n" + status_block(result, now),
+                 silent=True)
+            state["last_heartbeat_date"] = today
+        except Exception as exc:  # noqa: BLE001 - a missed check-in must not fail the run
+            print(f"Daily check-in not sent (will retry next run): {exc}")
 
     # --- manual test
     if os.environ.get("SEND_TEST", "").lower() == "true":
