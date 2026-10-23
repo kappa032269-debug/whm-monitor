@@ -2,7 +2,7 @@ name: Mongolia WHM cap monitor
 
 on:
   schedule:
-    - cron: "*/5 * * * *"   # every 5 minutes (GitHub may delay runs a little)
+    - cron: "*/30 * * * *"   # starts a run every 30 min; each run loops internally (see run_loop.py)
   workflow_dispatch:         # lets you run it manually with the "Run workflow" button
     inputs:
       send_test:
@@ -20,7 +20,7 @@ concurrency:
 jobs:
   check:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 120
     steps:
       - name: Get code
         uses: actions/checkout@v4
@@ -39,7 +39,8 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           SEND_TEST: ${{ github.event_name == 'workflow_dispatch' && inputs.send_test }}
-        run: python check_mongolia.py
+          RUN_MINUTES: ${{ github.event_name == 'workflow_dispatch' && '0' || '110' }}
+        run: python -u run_loop.py
 
       - name: Save state
         if: always()
