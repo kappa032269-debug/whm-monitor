@@ -1,68 +1,60 @@
-# Mongolia Work & Holiday (462) cap monitor
+# Монгол улсын Work & Holiday (462) визний квотын хяналт
 
-Checks the Australian Home Affairs country caps page every ~5 minutes and sends you a
-Telegram message the moment Mongolia changes from "paused" to "open". Runs free on GitHub,
-so your computer does not need to be on.
+Австралийн Дотоод хэргийн яамны (Home Affairs) улс орнуудын квотын хуудсыг ойролцоогоор минут тутамд шалгаж, Монгол улсын төлөв “paused” (түр зогссон) байдлаас “open” (нээлттэй) болмогц Telegram-аар мэдэгдэл илгээнэ. GitHub дээр үнэгүй ажилладаг тул таны компьютер асаалттай байх шаардлагагүй.
 
-**What you will receive**
-- 🚨 3 alerts immediately when Mongolia opens, then a reminder every 30 min while it stays open
-- ℹ️ A message if the status changes to anything else (closed, ballot, etc.)
-- ⚠️ A warning if the monitor stops working (so it never fails silently)
-- ☀️ A silent daily check-in around 09:00 UB time. **If this stops arriving, the monitor is broken.**
+**Та юу хүлээн авах вэ**
+- 🚨 Монгол улсын квот нээгдмэгц 3 мэдэгдэл шууд ирнэ, нээлттэй байх хугацаанд 30 минут тутамд сануулга давтагдана
+- ℹ️ Төлөв өөр утгад (closed, ballot гэх мэт) өөрчлөгдвөл мэдэгдэл ирнэ
+- ⚠️ Хяналт ажиллахаа больвол сэрэмжлүүлэг ирнэ (чимээгүйгээр эвдрэхгүй)
+- ☀️ Улаанбаатарын цагаар өдөр бүр ойролцоогоор 09:00 цагт чимээгүй “ажиллаж байна” мэдэгдэл ирнэ. **Энэ мэдэгдэл ирэхээ больвол хяналт эвдэрсэн гэсэн үг.**
 
-Setup takes about 10 minutes. You only do this once.
+Тохируулахад ойролцоогоор 10 минут шаардлагатай. Зөвхөн нэг удаа хийнэ.
 
 ---
 
-## Step 1 — Create the Telegram bot (3 min)
-1. In Telegram, search for **@BotFather** (blue checkmark) and open it.
-2. Send `/newbot`.
-3. Give it a name, e.g. `Mongolia WHM Alert`.
-4. Give it a username ending in `bot`, e.g. `tergel_whm_alert_bot`.
-5. BotFather replies with a **token** like `7412345678:AAH...`. Copy it and keep it private.
-6. Tap the link BotFather gives you (t.me/your_bot) and press **START**. ← important
+## 1-р алхам — Telegram бот үүсгэх (3 мин)
+1. Telegram дээр **@BotFather** (цэнхэр тэмдэгтэй)-ийг хайж нээнэ.
+2. `/newbot` гэж илгээнэ.
+3. Ботод нэр өгнө, жишээ нь `Mongolia WHM Alert`.
+4. `bot`-оор төгссөн хэрэглэгчийн нэр өгнө, жишээ нь `my_whm_alert_bot`.
+5. BotFather `7412345678:AAH...` хэлбэрийн **токен** илгээнэ. Үүнийг хуулж аваад нууцлан хадгална.
+6. BotFather-ийн өгсөн линк (t.me/your_bot)-ийг дараад **START** товчийг дарна. ← чухал
 
-## Step 2 — Create the GitHub repository (3 min)
-1. Sign up / log in at https://github.com.
-2. Top right **+** → **New repository**.
-3. Name: `whm-monitor`. Select **Public** (public repos get unlimited free run time;
-   your token stays secret in Step 3). Click **Create repository**.
-4. On the new page, click the link **"uploading an existing file"**.
-5. Unzip the downloaded file and drag **everything inside the `whm-monitor` folder**
-   into the browser, including the `.github` folder. Click **Commit changes**.
-   - On Mac the `.github` folder is hidden: press `Cmd + Shift + .` in Finder to show it.
-6. Check the repo now shows: `.github`, `check_mongolia.py`, `requirements.txt`, `README.md`.
-   If `.github` is missing, do this instead: **Add file → Create new file**, type the name
-   `.github/workflows/monitor.yml`, paste in the contents of that file, **Commit changes**.
+## 2-р алхам — GitHub repository үүсгэх (3 мин)
+1. https://github.com дээр бүртгүүлж / нэвтэрнэ.
+2. Баруун дээд буланд **+** → **New repository**.
+3. Нэр: `whm-monitor`. **Public**-ийг сонгоно (public repository-д ажиллах хугацаа хязгааргүй, үнэгүй; токен нь 3-р алхамд нууцлагдсан хэвээр байна). **Create repository** дарна.
+4. Шинэ хуудсан дээрх **“uploading an existing file”** линкийг дарна.
+5. Татаж авсан файлыг задалж, `whm-monitor` хавтас доторх бүх зүйлийг, **`.github` хавтасыг оруулаад** хөтчийн цонх руу чирж оруулна. **Commit changes** дарна.
+   - Mac дээр `.github` хавтас нуугдмал байдаг: Finder дотор `Cmd + Shift + .` дарж харуулна.
+6. Repository-д `.github`, `check_mongolia.py`, `run_loop.py`, `requirements.txt`, `README.md` файлууд харагдаж байгаа эсэхийг шалгана. Хэрэв `.github` байхгүй бол: **Add file → Create new file** дараад нэрэнд `.github/workflows/monitor.yml` гэж бичиж, тухайн файлын агуулгыг буулгаад **Commit changes** дарна.
 
-## Step 3 — Add your bot token as a secret (1 min)
-1. In your repo: **Settings** → **Secrets and variables** → **Actions**.
+## 3-р алхам — Ботын токеныг secret болгон нэмэх (1 мин)
+1. Өөрийн repository-д: **Settings → Secrets and variables → Actions**.
 2. **New repository secret**.
-3. Name: `TELEGRAM_BOT_TOKEN` (exactly this). Secret: paste your token. **Add secret**.
+3. Name: `TELEGRAM_BOT_TOKEN` (яг ингэж бичнэ). Secret: токеноо буулгана. **Add secret** дарна.
 
-## Step 4 — Start it (1 min)
-1. Open the **Actions** tab. If asked, click the green button to enable workflows.
-2. Click **Mongolia WHM cap monitor** on the left → **Run workflow** → **Run workflow**.
-3. Wait ~30 seconds. You should get 3 Telegram messages: ✅ Connected, 👀 Monitor started,
-   🧪 Test message. **Done** — it now runs by itself every 5 minutes.
+## 4-р алхам — Эхлүүлэх (1 мин)
+1. **Actions** табыг нээнэ. Асуувал ногоон товчийг дарж workflow-г идэвхжүүлнэ.
+2. Зүүн талаас **Mongolia WHM cap monitor**-ийг сонгоод → **Run workflow** → **Run workflow** дарна.
+3. ~30 секунд хүлээнэ. Telegram дээр 3 мессеж ирнэ: ✅ Connected, 👀 Monitor started, 🧪 Test message. Болсон — одоо хяналт өөрөө, минут тутамд ажиллана.
 
-Tip: in Telegram, open the bot chat → Notifications → pick a loud custom sound.
+> Зөвлөмж: Telegram дээр ботын чат → Notifications → чанга дуутай хонхны дууг сонгоорой.
 
 ---
 
-## Troubleshooting
-| Problem | Fix |
+## Асуудал гарвал
+| Асуудал | Шийдэл |
 |---|---|
-| Red ❌ run, log says "No chat found" | Open your bot in Telegram, press START / send "hi", then Run workflow again. |
-| Red ❌ run, log says "TELEGRAM_BOT_TOKEN secret is missing" | Redo Step 3; the name must be exactly `TELEGRAM_BOT_TOKEN`. |
-| Red ❌ at "Save state" with "Permission denied" | Settings → Actions → General → Workflow permissions → **Read and write** → Save. |
-| ⚠️ "Monitor problem" messages keep coming | The site may be blocking GitHub. The script already tries a backup route; if it persists, send me the error text. |
-| Daily check-in stopped | Actions tab → check if the workflow was disabled and click **Enable workflow**. |
+| Улаан ❌ ажиллалт, логт “No chat found” гэж байвал | Telegram дээр ботоо нээж START дарна (эсвэл “hi” гэж бичнэ), дараа нь Run workflow-г дахин ажиллуулна. |
+| Улаан ❌ ажиллалт, логт “TELEGRAM_BOT_TOKEN secret is missing” гэж байвал | 3-р алхмыг дахин хийнэ. Нэр нь яг `TELEGRAM_BOT_TOKEN` байх ёстой. |
+| Улаан ❌ “Save state” дээр “Permission denied” гарвал | Settings → Actions → General → Workflow permissions → **Read and write** → Save. |
+| ⚠️ “Monitor problem” мессеж дахин дахин ирвэл | Сайт GitHub-ийг хаасан байж болзошгүй. Скрипт нөөц замаар оролддог. Үргэлжилбэл алдааны текстийг хөгжүүлэгчид илгээнэ үү. |
+| Өдөр тутмын мэдэгдэл ирэхээ больсон | Actions таб → workflow идэвхгүй болсон эсэхийг шалгаад **Enable workflow** дарна. |
 
-## Notes
-- GitHub runs scheduled jobs "about" every 5 minutes; at busy times it can be 10–15 min.
-- Home Affairs says the page can take up to 48 hours to reflect a change, so the real
-  opening in ImmiAccount may happen slightly before the page updates.
-- `state.json` is created automatically; it only stores the last status and your chat ID
-  (useless without your secret token).
-- To stop the monitor: Actions → Mongolia WHM cap monitor → **⋯** → **Disable workflow**.
+## Тэмдэглэл
+- Нэг ажиллалт (job) ойролцоогоор 110 минут үргэлжилж, дотроо минут тутамд шалгана. GitHub 30 минут тутамд дараагийн ажиллалтыг дараалалд оруулдаг тул завсарлага гарахгүй. Дараалалд хүлээгээд солигдсон ажиллалтууд “cancelled” гэж харагдаж болох ба энэ нь хэвийн үзэгдэл.
+- Автомат хуваарь анх эхлэхэд GitHub-ээс шалтгаалан хамгийн ихдээ ~30 минут хоцорч болно.
+- Home Affairs хуудсанд өөрчлөлт тусгагдахад 48 цаг хүртэл хугацаа орж болдог тул ImmiAccount дээр квот хуудас шинэчлэгдэхээс арай эрт нээгдэж магадгүй.
+- `state.json` автоматаар үүснэ. Энэ нь зөвхөн сүүлийн төлөв болон таны chat ID-г хадгална (нууц токенгүйгээр ямар ч хэрэггүй).
+- Хяналтыг зогсоохдоо: Actions → Mongolia WHM cap monitor → ⋯ → Disable workflow.
