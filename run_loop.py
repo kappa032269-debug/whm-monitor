@@ -16,10 +16,10 @@ import traceback
 
 import check_mongolia
 
-POLL_SECONDS = int(os.environ.get("POLL_SECONDS", "30"))
+POLL_SECONDS = int(os.environ.get("POLL_SECONDS", "60"))
 RUN_MINUTES = float(os.environ.get("RUN_MINUTES", "110"))
 
-# Checks now happen every ~30 s, so wait for more failures before warning.
+# Checks happen every ~60 s, so 10 failures in a row is ~10 minutes before we warn.
 check_mongolia.FAILURE_ALERT_AFTER = 10
 
 
