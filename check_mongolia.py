@@ -55,11 +55,11 @@ HEADERS = {
 }
 
 LABELS = {
-    "open": "🟢 OPEN",
-    "paused": "⏸ Paused",
-    "closed": "🔴 Closed",
-    "ballot": "🎟 Ballot",
-    "unknown": "❓ Unknown",
+    "open": "🟢 НЭЭЛТТЭЙ (OPEN)",
+    "paused": "⏸ Түр зогссон (Paused)",
+    "closed": "🔴 Хаагдсан (Closed)",
+    "ballot": "🎟 Сугалаа (Ballot)",
+    "unknown": "❓ Тодорхойгүй",
 }
 
 # The page is full of zero-width spaces, so strip them before reading text.
@@ -192,7 +192,7 @@ def save_state(state: dict):
 
 
 def fmt(dt: datetime) -> str:
-    return dt.strftime("%Y-%m-%d %H:%M") + " (UB time)"
+    return dt.strftime("%Y-%m-%d %H:%M") + " (УБ-ын цагаар)"
 
 
 def minutes_since(iso: str, now: datetime) -> float:
@@ -204,22 +204,22 @@ def minutes_since(iso: str, now: datetime) -> float:
 
 # ----------------------------------------------------------------- messages --
 def status_block(result: dict, now: datetime) -> str:
-    lines = [f"Status: <b>{LABELS[result['status']]}</b> "
-             f"(page text: “{html.escape(result['raw'])}”)"]
+    lines = [f"Төлөв: <b>{LABELS[result['status']]}</b> "
+             f"(хуудасны текст: “{html.escape(result['raw'])}”)"]
     if result.get("last_updated"):
-        lines.append(f"Page last updated: {html.escape(result['last_updated'])} (Canberra time)")
-    lines.append(f"Checked: {fmt(now)}")
+        lines.append(f"Хуудас сүүлд шинэчлэгдсэн: {html.escape(result['last_updated'])} (Канберрагийн цагаар)")
+    lines.append(f"Шалгасан: {fmt(now)}")
     return "\n".join(lines)
 
 
 def open_alert(result: dict, now: datetime, reminder: bool = False) -> str:
-    head = ("⏰ REMINDER: Mongolia is STILL OPEN" if reminder
-            else "🚨🚨 MONGOLIA WORK &amp; HOLIDAY (462) IS OPEN! 🚨🚨")
-    return (f"{head}\n\nApply now — the annual cap is only ~100 places.\n\n"
+    head = ("⏰ САНУУЛГА: Монгол улсын квот нээлттэй хэвээр байна" if reminder
+            else "🚨🚨 МОНГОЛ УЛСЫН WORK &amp; HOLIDAY (462) ВИЗНИЙ КВОТ НЭЭГДЛЭЭ! 🚨🚨")
+    return (f"{head}\n\nЯаралтай анкетаа илгээнэ үү — жилийн квот ердөө ~100 хүнийх.\n\n"
             f"{status_block(result, now)}\n\n"
-            f"👉 <a href=\"{IMMI_ACCOUNT_URL}\">Log in to ImmiAccount</a>\n"
-            f"ℹ️ <a href=\"{APPLY_INFO_URL}\">Visa info &amp; requirements</a>\n"
-            f"📄 <a href=\"{PAGE_URL}\">Status page</a>")
+            f"👉 <a href=\"{IMMI_ACCOUNT_URL}\">ImmiAccount-д нэвтрэх</a>\n"
+            f"ℹ️ <a href=\"{APPLY_INFO_URL}\">Визний мэдээлэл &amp; шаардлага</a>\n"
+            f"📄 <a href=\"{PAGE_URL}\">Төлвийн хуудас</a>")
 
 
 # --------------------------------------------------------------------- main --
@@ -243,7 +243,7 @@ def main() -> int:
             return 1
         state["chat_id"] = chat_id
         save_state(state)
-        send(token, chat_id, "✅ Connected! This chat will receive Mongolia WHM cap alerts.")
+        send(token, chat_id, "✅ Холбогдлоо! Энэ чат Монгол улсын WHM квотын мэдэгдлийг хүлээн авна.")
 
     # --- check the page
     try:
@@ -255,13 +255,13 @@ def main() -> int:
         if fails >= FAILURE_ALERT_AFTER and \
                 minutes_since(state.get("last_failure_alert"), now) >= FAILURE_REPEAT_HOURS * 60:
             send(token, chat_id,
-                 f"⚠️ Monitor problem: the last {fails} checks failed, so I can't see "
-                 f"Mongolia's status right now.\n\nError: <code>{html.escape(str(exc)[:600])}</code>"
-                 f"\n\nCheck the page manually until this is fixed:\n{PAGE_URL}")
+                 f"⚠️ Хяналтын асуудал: сүүлийн {fails} шалгалт амжилтгүй болсон тул "
+                 f"Монгол улсын төлвийг одоогоор харах боломжгүй байна.\n\nАлдаа: <code>{html.escape(str(exc)[:600])}</code>"
+                 f"\n\nЗасагдтал хуудсыг гараар шалгаарай:\n{PAGE_URL}")
             state["last_failure_alert"] = now.isoformat()
         if os.environ.get("SEND_TEST", "").lower() == "true":
-            send(token, chat_id, f"🧪 Test message: Telegram works, but the page check "
-                                 f"failed:\n<code>{html.escape(str(exc)[:600])}</code>")
+            send(token, chat_id, f"🧪 Туршилтын мессеж: Telegram ажиллаж байна, гэвч хуудас шалгахад "
+                                 f"алдаа гарлаа:\n<code>{html.escape(str(exc)[:600])}</code>")
         save_state(state)
         return 0
 
@@ -271,7 +271,7 @@ def main() -> int:
 
     # --- recovered from failures
     if state.get("consecutive_failures", 0) >= FAILURE_ALERT_AFTER:
-        send(token, chat_id, "✅ Monitor recovered — checks are working again.\n\n"
+        send(token, chat_id, "✅ Хяналт сэргэлээ — шалгалтууд дахин хэвийн ажиллаж байна.\n\n"
                              + status_block(result, now))
     state["consecutive_failures"] = 0
     state.pop("last_failure_alert", None)
@@ -282,8 +282,8 @@ def main() -> int:
 
     if first_run:
         send(token, chat_id,
-             "👀 Monitor started. I'll check Mongolia's Work &amp; Holiday cap every few "
-             "minutes and alert you the moment it opens.\n\n" + status_block(result, now))
+             "👀 Хяналт эхэллээ. Монгол улсын Work &amp; Holiday квотыг минут тутамд "
+             "шалгаж, нээгдмэгц танд шууд мэдэгдэнэ.\n\n" + status_block(result, now))
         if now.hour >= HEARTBEAT_HOUR_UB:
             state["last_heartbeat_date"] = today
 
@@ -298,15 +298,15 @@ def main() -> int:
             state["last_open_alert"] = now.isoformat()
     elif changed:
         note = {
-            "closed": "Closed means all places for this program year are filled; "
-                      "it reopens on 2 July.",
-            "ballot": "Mongolia has moved to a ballot system — check the page for "
-                      "registration instructions.",
-            "paused": "It's paused again. I'll keep watching.",
-            "unknown": "The status text is something I don't recognise — please check the page.",
+            "closed": "Closed нь энэ хөтөлбөрийн жилийн бүх байр дүүрсэн гэсэн үг; "
+                      "7 дугаар сарын 2-нд дахин нээгдэнэ.",
+            "ballot": "Монгол улс сугалааны (ballot) системд шилжлээ — "
+                      "бүртгэлийн зааврыг хуудаснаас шалгана уу.",
+            "paused": "Дахин түр зогссон байна. Би үргэлжлүүлэн хянана.",
+            "unknown": "Төлвийн текст танигдахгүй байна — хуудсыг шалгана уу.",
         }.get(status, "")
         send(token, chat_id,
-             f"ℹ️ Mongolia status changed: {LABELS.get(prev, prev)} → <b>{LABELS[status]}</b>\n"
+             f"ℹ️ Монгол улсын төлөв өөрчлөгдлөө: {LABELS.get(prev, prev)} → <b>{LABELS[status]}</b>\n"
              f"{note}\n\n{status_block(result, now)}\n\n📄 {PAGE_URL}")
 
     if changed or first_run:
@@ -318,7 +318,7 @@ def main() -> int:
     # --- daily silent check-in, so you know the monitor is still alive
     if now.hour >= HEARTBEAT_HOUR_UB and state.get("last_heartbeat_date") != today:
         try:
-            send(token, chat_id, "☀️ Daily check-in: still watching.\n\n" + status_block(result, now),
+            send(token, chat_id, "☀️ Өдөр тутмын мэдэгдэл: хяналт ажиллаж байна.\n\n" + status_block(result, now),
                  silent=True)
             state["last_heartbeat_date"] = today
         except Exception as exc:  # noqa: BLE001 - a missed check-in must not fail the run
@@ -326,7 +326,7 @@ def main() -> int:
 
     # --- manual test
     if os.environ.get("SEND_TEST", "").lower() == "true":
-        send(token, chat_id, "🧪 Test message: everything works.\n\n" + status_block(result, now))
+        send(token, chat_id, "🧪 Туршилтын мессеж: бүх зүйл хэвийн ажиллаж байна.\n\n" + status_block(result, now))
 
     save_state(state)
     return 0
